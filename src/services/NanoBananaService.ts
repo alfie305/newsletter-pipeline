@@ -19,18 +19,20 @@ export interface ReferenceImage {
 }
 
 /**
- * Service wrapper for Nano Banana (Gemini) image generation
+ * Service wrapper for Nano Banana (Gemini 2.5 Flash Image) generation
+ * Uses the generateContent API with IMAGE responseModality
  */
 export class NanoBananaService {
   private apiKey: string;
   private baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
+  private model = 'gemini-2.5-flash-image';
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
   }
 
   /**
-   * Generate a single image
+   * Generate a single image using Gemini generateContent API
    */
   async generateImage(
     prompt: string,
@@ -41,52 +43,47 @@ export class NanoBananaService {
     try {
       const result = await withRetry(
         async () => {
-          // Build instances array
-          const instances: any[] = [];
+          // Build content parts array
+          const parts: any[] = [];
 
           if (referenceImages && referenceImages.length > 0) {
-            // NEW PATH: With reference images
             logger.info('Generating image with reference images', {
               sectionId,
               referenceCount: referenceImages.length,
             });
 
-            const enhancedPrompt = this.enhancePromptWithReferences(
-              prompt,
-              referenceImages.length
-            );
+            // Add reference images as inline_data parts first
+            for (const ref of referenceImages) {
+              const base64Data = await this.loadReferenceImage(ref.filePath);
+              const mimeType = this.getMimeType(ref.filePath);
 
-            const referenceImageData = await Promise.all(
-              referenceImages.map(async (ref) => ({
-                referenceType: 'REFERENCE_TYPE_STYLE',
-                referenceId: ref.referenceId,
-                referenceImage: {
-                  bytesBase64Encoded: await this.loadReferenceImage(ref.filePath),
+              parts.push({
+                inline_data: {
+                  mime_type: mimeType,
+                  data: base64Data,
                 },
-                ...(ref.styleDescription && {
-                  styleImageConfig: { styleDescription: ref.styleDescription },
-                }),
-              }))
-            );
+              });
+            }
 
-            instances.push({
-              prompt: enhancedPrompt,
-              referenceImages: referenceImageData,
+            // Add text prompt with style instruction
+            parts.push({
+              text: `Generate an image matching the visual style, color palette, and artistic approach of the provided reference image(s). The image should depict: ${prompt}`,
             });
           } else {
-            // LEGACY PATH: Text-only (backward compatible)
-            instances.push({ prompt: prompt });
+            // Text-only generation
+            parts.push({ text: `Generate an image: ${prompt}` });
           }
 
+          // Make API request using generateContent endpoint
           const response = await axios.post(
-            `${this.baseUrl}/models/imagen-3.0-generate-001:predict`,
+            `${this.baseUrl}/models/${this.model}:generateContent`,
             {
-              instances,
-              parameters: {
-                sampleCount: 1,
-                aspectRatio: '16:9',
-                safetyFilterLevel: 'block_some',
-                personGeneration: 'allow_adult',
+              contents: [{ parts }],
+              generationConfig: {
+                responseModalities: ['IMAGE'],
+                imageConfig: {
+                  aspectRatio: '16:9',
+                },
               },
             },
             {
@@ -94,18 +91,41 @@ export class NanoBananaService {
                 'Content-Type': 'application/json',
                 'x-goog-api-key': this.apiKey,
               },
-              timeout: 60000, // 60 second timeout for image generation
+              timeout: 120000, // 120 second timeout for image generation
             }
           );
 
-          // Extract image data from response
-          const imageData = response.data.predictions[0].bytesBase64Encoded;
+          // Extract image from response candidates
+          const candidates = response.data.candidates;
+          if (!candidates || candidates.length === 0) {
+            throw new Error('No candidates returned from Gemini');
+          }
+
+          const responseParts = candidates[0].content?.parts;
+          if (!responseParts || responseParts.length === 0) {
+            throw new Error('No parts in response candidate');
+          }
+
+          // Find the part containing image data (API returns camelCase: inlineData)
+          const imagePart = responseParts.find(
+            (part: any) => part.inlineData || part.inline_data
+          );
+
+          const imageData = imagePart?.inlineData || imagePart?.inline_data;
+          if (!imageData?.data) {
+            // Check if there's a text-only response (e.g. safety block)
+            const textPart = responseParts.find((part: any) => part.text);
+            if (textPart) {
+              throw new Error(`Model returned text instead of image: ${textPart.text.substring(0, 200)}`);
+            }
+            throw new Error('No image data in response');
+          }
 
           // Ensure output directory exists
           await fs.mkdir(path.dirname(outputPath), { recursive: true });
 
           // Save image
-          const buffer = Buffer.from(imageData, 'base64');
+          const buffer = Buffer.from(imageData.data, 'base64');
           await fs.writeFile(outputPath, buffer);
 
           return {
@@ -130,21 +150,23 @@ export class NanoBananaService {
 
       return result;
     } catch (error) {
-      const errorMessage = error.message.toLowerCase();
+      const errorMessage = error.message?.toLowerCase() || '';
 
-      // NEW: Detect reference image errors and fallback
-      if (errorMessage.includes('reference')) {
+      // Detect reference image errors and fallback to text-only
+      if (
+        referenceImages &&
+        referenceImages.length > 0 &&
+        (errorMessage.includes('reference') || errorMessage.includes('inline_data'))
+      ) {
         logger.warn('Reference image processing failed, falling back to text-only', {
           sectionId,
           error: error.message,
         });
-
-        // Retry without reference images
         return await this.generateImage(prompt, outputPath, sectionId);
       }
 
       // Detect content filter block
-      if (errorMessage.includes('safety') || errorMessage.includes('filter')) {
+      if (errorMessage.includes('safety') || errorMessage.includes('filter') || errorMessage.includes('blocked')) {
         logger.warn('Image generation blocked by content filter', {
           sectionId,
           prompt: prompt.substring(0, 100),
@@ -159,7 +181,7 @@ export class NanoBananaService {
       }
 
       // Detect rate limit
-      if (errorMessage.includes('quota') || errorMessage.includes('rate limit')) {
+      if (errorMessage.includes('quota') || errorMessage.includes('rate limit') || errorMessage.includes('429')) {
         logger.warn('Image generation rate limited', { sectionId });
         return {
           section_id: sectionId,
@@ -199,8 +221,14 @@ export class NanoBananaService {
   ): Promise<ImageGenerationResult[]> {
     const results: ImageGenerationResult[] = [];
 
-    for (const { sectionId, prompt, outputPath, referenceImages } of prompts) {
-      logger.info('Generating image', { sectionId, hasReferences: !!referenceImages });
+    for (let i = 0; i < prompts.length; i++) {
+      const { sectionId, prompt, outputPath, referenceImages } = prompts[i];
+
+      logger.info('Generating image', {
+        sectionId,
+        hasReferences: !!referenceImages,
+        progress: `${i + 1}/${prompts.length}`,
+      });
 
       const result = await this.generateImage(
         prompt,
@@ -211,10 +239,7 @@ export class NanoBananaService {
       results.push(result);
 
       // Add delay between requests to avoid rate limiting
-      if (
-        prompts.indexOf({ sectionId, prompt, outputPath, referenceImages }) <
-        prompts.length - 1
-      ) {
+      if (i < prompts.length - 1) {
         logger.info('Waiting between image generations', { delayMs });
         await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
@@ -307,36 +332,12 @@ export class NanoBananaService {
   }
 
   /**
-   * Enhance prompt with reference image notation
-   */
-  private enhancePromptWithReferences(
-    prompt: string,
-    referenceCount: number
-  ): string {
-    // Check if prompt already has reference notation
-    const hasReferences = /\[\d+\]/.test(prompt);
-
-    if (hasReferences) {
-      // User provided manual references, don't modify
-      logger.info('Prompt already contains reference notation, using as-is');
-      return prompt;
-    }
-
-    // Auto-inject references
-    // For 3 references: "in the visual style of [1] and [2] and [3]"
-    const refs = Array.from({ length: referenceCount }, (_, i) => `[${i + 1}]`);
-    const refString = refs.join(' and ');
-
-    return `${prompt} in the visual style of ${refString}`;
-  }
-
-  /**
    * Validate API key
    */
   async validateApiKey(): Promise<boolean> {
     try {
       const response = await axios.get(
-        `${this.baseUrl}/models/imagen-3.0-generate-001`,
+        `${this.baseUrl}/models/${this.model}`,
         {
           headers: {
             'x-goog-api-key': this.apiKey,
@@ -348,7 +349,6 @@ export class NanoBananaService {
       if (error.response?.status === 401 || error.response?.status === 403) {
         return false;
       }
-      // Other errors might be OK
       return true;
     }
   }

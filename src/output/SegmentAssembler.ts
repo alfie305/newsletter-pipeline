@@ -23,13 +23,19 @@ export class SegmentAssembler {
     logger.info('HTML assembly completed', { outputPath });
   }
 
+  private getEditionIdFromPath(outputPath: string): string {
+    // Extract edition ID from path like "data/editions/2026-02-19/output.html"
+    const match = outputPath.match(/editions\/([^/]+)\//);
+    return match ? match[1] : '';
+  }
+
   private buildHTML(
     content: NewsletterContent,
     imageResult: ImageResult,
     editionDate: string
   ): string {
     const storySegments = content.segments.stories
-      .map((story, idx) => this.buildStorySegment(story, idx + 1, imageResult))
+      .map((story, idx) => this.buildStorySegment(story, idx + 1, imageResult, editionDate))
       .join('\n\n');
 
     const quickHitsHTML = content.segments.quick_hits
@@ -39,7 +45,7 @@ export class SegmentAssembler {
       .join('\n');
 
     const deepSpaceSegment = content.segments.deep_space
-      ? this.buildDeepSpaceSegment(content.segments.deep_space, imageResult)
+      ? this.buildDeepSpaceSegment(content.segments.deep_space, imageResult, editionDate)
       : '';
 
     const rundownItems = content.segments.intro.rundown_items
@@ -484,16 +490,26 @@ ${quickHitsHTML}
 </html>`;
   }
 
-  private buildStorySegment(story: any, storyNum: number, imageResult: ImageResult): string {
+  private buildStorySegment(story: any, storyNum: number, imageResult: ImageResult, editionDate: string): string {
     const segmentNum = storyNum + 1; // +1 because intro is segment 1
+
+    // Find matching image
+    const imageData = imageResult.images.find(
+      (img) => img.section_id === `section_${storyNum}`
+    );
+    const imagePath = imageData?.file_path || '';
+    // Use API route for images (works both in dashboard and direct file view)
+    const apiImagePath = imagePath ? `/api/editions/${editionDate}/images/section_${storyNum}.png` : '';
+    const imageHTML = apiImagePath
+      ? `<img src="${apiImagePath}" alt="${story.section_label}" style="width:100%; border-radius:8px; margin-bottom:16px;">`
+      : `<div class="img-placeholder"><span>{{IMAGE_${storyNum}}} — Nano Banana: ${story.section_label.toLowerCase()}</span></div>`;
+
     return `  <!-- STORY ${storyNum} -->
   <div class="segment" id="seg-${storyNum}">
     <span class="segment-label story-label">${story.section_emoji} ${story.section_label} — STORY ${storyNum}</span>
     <button class="copy-btn" onclick="copySegment(${storyNum})">Copy</button>
     <div class="segment-content" id="content-${storyNum}">
-      <div class="img-placeholder">
-        <span>{{IMAGE_${storyNum}}} — Nano Banana: ${story.section_label.toLowerCase()}</span>
-      </div>
+      ${imageHTML}
       <div class="story-header">
         <span class="story-number">${storyNum}</span>
         <span class="story-category">${story.section_emoji} ${story.section_label}</span>
@@ -508,15 +524,22 @@ ${quickHitsHTML}
   </div>`;
   }
 
-  private buildDeepSpaceSegment(deepSpace: any, imageResult: ImageResult): string {
+  private buildDeepSpaceSegment(deepSpace: any, imageResult: ImageResult, editionDate: string): string {
+    // Find deep space image
+    const imageData = imageResult.images.find((img) => img.section_id === 'deep_space');
+    const imagePath = imageData?.file_path || '';
+    // Use API route for images
+    const apiImagePath = imagePath ? `/api/editions/${editionDate}/images/deep_space.png` : '';
+    const imageHTML = apiImagePath
+      ? `<img src="${apiImagePath}" alt="Deep Space" style="width:100%; border-radius:8px; margin-bottom:16px; height:160px; object-fit:cover;">`
+      : `<div class="img-placeholder" style="height:160px;"><span>{{IMAGE_DEEPSPACE}} — Nano Banana: deep space</span></div>`;
+
     return `  <!-- DEEP SPACE -->
   <div class="segment" id="seg-deepspace">
     <span class="segment-label deepspace-label">🔭 DEEP SPACE</span>
     <button class="copy-btn" onclick="copySegment('deepspace')">Copy</button>
     <div class="segment-content" id="content-deepspace">
-      <div class="img-placeholder" style="height:160px;">
-        <span>{{IMAGE_DEEPSPACE}} — Nano Banana: deep space</span>
-      </div>
+      ${imageHTML}
       <h2>🔭 Deep Space Corner</h2>
       ${deepSpace.body_html}
       <a href="${deepSpace.read_more_url}" class="read-more">Read more →</a>

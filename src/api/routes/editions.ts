@@ -74,6 +74,32 @@ export function editionsRouter(storage: FileStorage) {
     }
   });
 
+  // GET /api/editions/:id/images/:filename - Serve generated images
+  router.get('/:id/images/:filename', async (req, res) => {
+    try {
+      const { id, filename } = req.params;
+
+      // Security: only allow specific image files
+      if (!/^(section_\d+|deep_space)\.(png|svg)$/.test(filename)) {
+        return res.status(400).json({ error: 'Invalid filename' });
+      }
+
+      const imagePath = path.join('data', 'editions', id, 'images', filename);
+
+      try {
+        await fs.access(imagePath);
+        res.sendFile(path.resolve(imagePath));
+      } catch {
+        return res.status(404).json({ error: 'Image not found' });
+      }
+    } catch (error) {
+      logger.error('Failed to serve image', { error });
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to serve image',
+      });
+    }
+  });
+
   // GET /api/editions/:id/results/:stage - Get specific stage results
   router.get('/:id/results/:stage', async (req, res) => {
     try {

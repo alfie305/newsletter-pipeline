@@ -22,7 +22,16 @@ export const DiscoveryResultSchema = z.object({
 // Article from crawl stage
 export const CrawledArticleSchema = DiscoveryStorySchema.extend({
   full_text: z.string().optional(),
-  author: z.string().optional(),
+  author: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((val) => {
+      // Convert array of authors to comma-separated string
+      if (Array.isArray(val)) {
+        return val.join(', ');
+      }
+      return val;
+    }),
   key_stats: z.array(z.string()).optional(),
   crawl_status: z.enum(['success', 'failed', 'skipped', 'paywall']),
   crawl_error: z.string().optional(),

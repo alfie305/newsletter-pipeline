@@ -136,7 +136,12 @@ export class ImagesStage extends Stage {
           );
           const emoji = story?.section_emoji || '🚀';
 
-          const placeholderPath = result.file_path.replace('.png', '.svg');
+          // Build placeholder path from section ID (file_path may be empty on failure)
+          const placeholderPath = path.join(
+            context.dataDir,
+            'images',
+            `${result.section_id}.svg`
+          );
           const placeholder = await this.nanoBanana.createPlaceholder(
             placeholderPath,
             result.section_id,
