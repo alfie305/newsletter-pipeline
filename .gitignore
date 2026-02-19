@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+dashboard/node_modules/
+
+# Environment variables
+.env
+
+# Build outputs
+dist/
+dashboard/dist/
+dashboard/build/
+
+# Data and cache
+data/editions/
+data/cache/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+.tmp/

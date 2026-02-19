@@ -1,0 +1,16 @@
+{
+  "presets": [
+    {
+      "id": "preset_1771441010427",
+      "name": "brand character + styling",
+      "description": "This is my brand character and also the type of styling that I want used in my images. ",
+      "reference_images": [
+        "style_presets/preset_1771441010427/ref_1771441016797.png"
+      ],
+      "style_description": "",
+      "created_at": "2026-02-18T18:56:50.427Z",
+      "last_used": "2026-02-18T18:56:59.717Z"
+    }
+  ],
+  "active_preset_id": "preset_1771441010427"
+}
