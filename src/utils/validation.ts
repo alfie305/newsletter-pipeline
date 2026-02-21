@@ -138,7 +138,7 @@ export const NewsletterContentSchema = z.object({
       body_html: z.string(),
       read_more_url: z.string().url(),
       image_placeholder: z.string(),
-    }).optional(),
+    }).nullish(), // Allow both null and undefined
     closing: z.object({
       body: z.string(),
       cta: z.string(),

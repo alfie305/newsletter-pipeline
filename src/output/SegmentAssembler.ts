@@ -40,7 +40,7 @@ export class SegmentAssembler {
 
     const quickHitsHTML = content.segments.quick_hits
       .map(
-        (hit) => `        <li><strong>${hit.title_bold}:</strong> ${hit.body} <a href="${hit.source_url}">${hit.source_label}</a></li>`
+        (hit) => `        <li><strong>${hit.title_bold}:</strong> ${hit.body} <a href="${hit.source_url}" style="font-family: Helvetica, Arial, sans-serif; color: #f59e0b; text-decoration: underline;">${hit.source_label}</a></li>`
       )
       .join('\n');
 
@@ -59,12 +59,11 @@ export class SegmentAssembler {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Space Pulse — Copy Segments</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: Helvetica, Arial, -apple-system, sans-serif;
       max-width: 680px;
       margin: 40px auto;
       padding: 0 20px;
@@ -122,7 +121,7 @@ export class SegmentAssembler {
       padding: 10px 24px;
       border-radius: 6px;
       cursor: pointer;
-      font-family: 'Inter', sans-serif;
+      font-family: Helvetica, Arial, sans-serif;
       transition: all 0.2s;
     }
     .copy-all-btn:hover { background: #333; }
@@ -137,13 +136,13 @@ export class SegmentAssembler {
       position: relative;
       transition: border-color 0.2s;
     }
-    .segment:hover { border-color: #6366f1; }
+    .segment:hover { border-color: #f59e0b; }
 
     .segment-label {
       position: absolute;
       top: -11px;
       left: 16px;
-      background: #6366f1;
+      background: #f59e0b;
       color: white;
       font-size: 10px;
       font-weight: 700;
@@ -155,29 +154,35 @@ export class SegmentAssembler {
     }
 
     .segment-label.header-label { background: #0a0a0a; }
-    .segment-label.story-label { background: #6366f1; }
+    .segment-label.story-label { background: #f59e0b; }
     .segment-label.ad-label { background: #f59e0b; color: #000; }
     .segment-label.quickhits-label { background: #10b981; }
     .segment-label.deepspace-label { background: #8b5cf6; }
     .segment-label.closing-label { background: #64748b; }
 
-    .copy-btn {
+    .copy-buttons {
       position: absolute;
       top: -11px;
       right: 16px;
+      display: flex;
+      gap: 6px;
+    }
+    .copy-btn {
       background: #1a1a1a;
       color: white;
       border: none;
       font-size: 10px;
       font-weight: 600;
-      padding: 4px 14px;
+      padding: 4px 12px;
       border-radius: 4px;
       cursor: pointer;
-      font-family: 'Inter', sans-serif;
+      font-family: Helvetica, Arial, sans-serif;
       transition: all 0.15s;
     }
     .copy-btn:hover { background: #444; }
     .copy-btn.copied { background: #22c55e; }
+    .copy-btn.html { background: #f59e0b; }
+    .copy-btn.html:hover { background: #5558e0; }
 
     .segment-content h1 {
       font-size: 24px;
@@ -198,7 +203,7 @@ export class SegmentAssembler {
       margin: 18px 0 6px 0;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      color: #6366f1;
+      color: #f59e0b;
     }
     .segment-content p {
       font-size: 15px;
@@ -216,7 +221,7 @@ export class SegmentAssembler {
       margin-bottom: 8px;
       color: #2a2a2a;
     }
-    .segment-content a { color: #6366f1; text-decoration: underline; }
+    .segment-content a { color: #f59e0b; text-decoration: underline; }
     .segment-content strong { font-weight: 700; }
     .segment-content em { font-style: italic; color: #555; }
 
@@ -274,14 +279,14 @@ export class SegmentAssembler {
     .story-category {
       font-size: 11px;
       font-weight: 600;
-      color: #6366f1;
+      color: #f59e0b;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .tldr-box {
       background: #f8f8f8;
-      border-left: 3px solid #6366f1;
+      border-left: 3px solid #f59e0b;
       padding: 10px 14px;
       margin: 12px 0;
       font-size: 14px;
@@ -293,7 +298,7 @@ export class SegmentAssembler {
       display: inline-block;
       font-size: 13px;
       font-weight: 600;
-      color: #6366f1;
+      color: #f59e0b;
       text-decoration: none;
       margin-top: 4px;
     }
@@ -342,8 +347,8 @@ export class SegmentAssembler {
   </div>
 
   <div class="instructions">
-    Click <strong>Copy</strong> on each segment → Paste into a Beehiiv text block.<br>
-    Links, bold, and bullets carry over as native formatting.<br>
+    <strong>Copy Text</strong> → Paste into Beehiiv text blocks (preserves links, bold, bullets).<br>
+    <strong>Copy HTML</strong> → Paste into Beehiiv Custom HTML blocks (raw source code).<br>
     Replace <code>{{IMAGE}}</code> placeholders with Nano Banana generated images.
   </div>
 
@@ -354,8 +359,11 @@ export class SegmentAssembler {
   <!-- SEGMENT 0: HEADER -->
   <div class="segment" id="seg-0">
     <span class="segment-label header-label">HEADER</span>
-    <button class="copy-btn" onclick="copySegment(0)">Copy</button>
-    <div class="segment-content" id="content-0">
+    <div class="copy-buttons">
+      <button class="copy-btn" onclick="copySegmentText(0)">Copy Text</button>
+      <button class="copy-btn html" onclick="copySegmentHTML(0)">Copy HTML</button>
+    </div>
+    <div class="segment-content" id="content-0" style="font-family: Helvetica, Arial, sans-serif;">
       <h1>${content.segments.header.title}</h1>
       <p class="subtitle">${content.segments.header.subtitle}</p>
     </div>
@@ -364,8 +372,11 @@ export class SegmentAssembler {
   <!-- SEGMENT 1: INTRO + RUNDOWN -->
   <div class="segment" id="seg-1">
     <span class="segment-label header-label">INTRO + RUNDOWN</span>
-    <button class="copy-btn" onclick="copySegment(1)">Copy</button>
-    <div class="segment-content" id="content-1">
+    <div class="copy-buttons">
+      <button class="copy-btn" onclick="copySegmentText(1)">Copy Text</button>
+      <button class="copy-btn html" onclick="copySegmentHTML(1)">Copy HTML</button>
+    </div>
+    <div class="segment-content" id="content-1" style="font-family: Helvetica, Arial, sans-serif;">
       ${content.segments.intro.hook}
       <p><strong>In this week's Space Pulse:</strong></p>
       <ul>
@@ -379,8 +390,11 @@ ${rundownItems}
   <!-- SPONSOR SLOT -->
   <div class="segment" id="seg-sponsor">
     <span class="segment-label ad-label">SPONSOR SLOT</span>
-    <button class="copy-btn" onclick="copySegment('sponsor')">Copy</button>
-    <div class="segment-content" id="content-sponsor">
+    <div class="copy-buttons">
+      <button class="copy-btn" onclick="copySegmentText('sponsor')">Copy Text</button>
+      <button class="copy-btn html" onclick="copySegmentHTML('sponsor')">Copy HTML</button>
+    </div>
+    <div class="segment-content" id="content-sponsor" style="font-family: Helvetica, Arial, sans-serif;">
       <p style="text-align:center; font-size:11px; color:#999; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">Presented by [Sponsor Name]</p>
       <div class="sponsor-placeholder">
         <span>{{SPONSOR_IMAGE}}</span>
@@ -395,8 +409,11 @@ ${rundownItems}
   <!-- QUICK HITS -->
   <div class="segment" id="seg-quickhits">
     <span class="segment-label quickhits-label">⚡ QUICK HITS</span>
-    <button class="copy-btn" onclick="copySegment('quickhits')">Copy</button>
-    <div class="segment-content" id="content-quickhits">
+    <div class="copy-buttons">
+      <button class="copy-btn" onclick="copySegmentText('quickhits')">Copy Text</button>
+      <button class="copy-btn html" onclick="copySegmentHTML('quickhits')">Copy HTML</button>
+    </div>
+    <div class="segment-content" id="content-quickhits" style="font-family: Helvetica, Arial, sans-serif;">
       <h2>⚡ Quick Hits</h2>
       <ul>
 ${quickHitsHTML}
@@ -409,8 +426,11 @@ ${quickHitsHTML}
   <!-- CLOSING -->
   <div class="segment" id="seg-closing">
     <span class="segment-label closing-label">CLOSING</span>
-    <button class="copy-btn" onclick="copySegment('closing')">Copy</button>
-    <div class="segment-content" id="content-closing">
+    <div class="copy-buttons">
+      <button class="copy-btn" onclick="copySegmentText('closing')">Copy Text</button>
+      <button class="copy-btn html" onclick="copySegmentHTML('closing')">Copy HTML</button>
+    </div>
+    <div class="segment-content" id="content-closing" style="font-family: Helvetica, Arial, sans-serif;">
       <hr class="divider">
       ${content.segments.closing.body}
       <p><strong>${content.segments.closing.cta}</strong></p>
@@ -425,7 +445,8 @@ ${quickHitsHTML}
   </div>
 
   <script>
-    function copySegment(idx) {
+    // Copy rendered text (for pasting into regular Beehiiv text blocks)
+    function copySegmentText(idx) {
       const content = document.getElementById('content-' + idx);
       const range = document.createRange();
       range.selectNodeContents(content);
@@ -435,13 +456,56 @@ ${quickHitsHTML}
       document.execCommand('copy');
       selection.removeAllRanges();
 
-      const btn = content.parentElement.querySelector('.copy-btn');
-      btn.textContent = 'Copied!';
-      btn.classList.add('copied');
+      const buttons = content.parentElement.querySelectorAll('.copy-btn');
+      const textBtn = buttons[0]; // First button is "Copy Text"
+      textBtn.textContent = '✓ Copied';
+      textBtn.classList.add('copied');
       setTimeout(() => {
-        btn.textContent = 'Copy';
-        btn.classList.remove('copied');
+        textBtn.textContent = 'Copy Text';
+        textBtn.classList.remove('copied');
       }, 1500);
+    }
+
+    // Copy raw HTML (for pasting into Beehiiv Custom HTML blocks)
+    function copySegmentHTML(idx) {
+      const content = document.getElementById('content-' + idx);
+      const htmlString = content.innerHTML;
+
+      // Use modern clipboard API if available
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(htmlString).then(() => {
+          const buttons = content.parentElement.querySelectorAll('.copy-btn');
+          const htmlBtn = buttons[1]; // Second button is "Copy HTML"
+          htmlBtn.textContent = '✓ Copied';
+          htmlBtn.classList.add('copied');
+          setTimeout(() => {
+            htmlBtn.textContent = 'Copy HTML';
+            htmlBtn.classList.remove('copied');
+          }, 1500);
+        }).catch(err => {
+          console.error('Failed to copy HTML:', err);
+          alert('Failed to copy HTML. Please try again.');
+        });
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = htmlString;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+
+        const buttons = content.parentElement.querySelectorAll('.copy-btn');
+        const htmlBtn = buttons[1];
+        htmlBtn.textContent = '✓ Copied';
+        htmlBtn.classList.add('copied');
+        setTimeout(() => {
+          htmlBtn.textContent = 'Copy HTML';
+          htmlBtn.classList.remove('copied');
+        }, 1500);
+      }
     }
 
     function copyAll() {
@@ -505,21 +569,37 @@ ${quickHitsHTML}
       : `<div class="img-placeholder"><span>{{IMAGE_${storyNum}}} — Nano Banana: ${story.section_label.toLowerCase()}</span></div>`;
 
     return `  <!-- STORY ${storyNum} -->
-  <div class="segment" id="seg-${storyNum}">
+  <div class="segment" id="seg-${segmentNum}">
     <span class="segment-label story-label">${story.section_emoji} ${story.section_label} — STORY ${storyNum}</span>
-    <button class="copy-btn" onclick="copySegment(${storyNum})">Copy</button>
-    <div class="segment-content" id="content-${storyNum}">
-      ${imageHTML}
-      <div class="story-header">
-        <span class="story-number">${storyNum}</span>
-        <span class="story-category">${story.section_emoji} ${story.section_label}</span>
+
+    <!-- TITLE SECTION (paste above image in Beehiiv) -->
+    <div style="position: relative; margin-bottom: 16px; padding-top: 24px;">
+      <div class="copy-buttons">
+        <button class="copy-btn" onclick="copySegmentText('title-${segmentNum}')">Copy Title</button>
+        <button class="copy-btn html" onclick="copySegmentHTML('title-${segmentNum}')">Copy Title HTML</button>
       </div>
-      <h2>${story.headline}</h2>
-      ${story.body_html}
-      <div class="tldr-box">
-        ${story.tldr_html}
+      <div class="segment-content" id="content-title-${segmentNum}" style="font-family: Helvetica, Arial, sans-serif;">
+        <span style="font-family: Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 600; color: #f59e0b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px;">${story.section_emoji} ${story.section_label}</span>
+        <h2 style="font-family: Helvetica, Arial, sans-serif; font-size: 20px; font-weight: 700; margin: 0; letter-spacing: -0.3px; line-height: 1.3;">${story.headline}</h2>
       </div>
-      <a href="${story.read_more_url}" class="read-more">${story.read_more_label}</a>
+    </div>
+
+    <!-- IMAGE (upload manually in Beehiiv) -->
+    ${imageHTML}
+
+    <!-- BODY SECTION (paste below image in Beehiiv) -->
+    <div style="position: relative; margin-top: 16px; padding-top: 24px;">
+      <div class="copy-buttons">
+        <button class="copy-btn" onclick="copySegmentText('body-${segmentNum}')">Copy Body</button>
+        <button class="copy-btn html" onclick="copySegmentHTML('body-${segmentNum}')">Copy Body HTML</button>
+      </div>
+      <div class="segment-content" id="content-body-${segmentNum}" style="font-family: Helvetica, Arial, sans-serif;">
+        ${story.body_html}
+        <div style="background: #f8f8f8; border-left: 3px solid #f59e0b; padding: 10px 14px; margin: 12px 0; font-size: 14px; line-height: 1.6; color: #333; font-family: Helvetica, Arial, sans-serif;">
+          ${story.tldr_html}
+        </div>
+        <a href="${story.read_more_url}" style="display: inline-block; font-size: 13px; font-weight: 600; color: #f59e0b; text-decoration: none; margin-top: 4px; font-family: Helvetica, Arial, sans-serif;">${story.read_more_label}</a>
+      </div>
     </div>
   </div>`;
   }
@@ -537,12 +617,15 @@ ${quickHitsHTML}
     return `  <!-- DEEP SPACE -->
   <div class="segment" id="seg-deepspace">
     <span class="segment-label deepspace-label">🔭 DEEP SPACE</span>
-    <button class="copy-btn" onclick="copySegment('deepspace')">Copy</button>
-    <div class="segment-content" id="content-deepspace">
-      ${imageHTML}
-      <h2>🔭 Deep Space Corner</h2>
+    <div class="copy-buttons">
+      <button class="copy-btn" onclick="copySegmentText('deepspace')">Copy Text</button>
+      <button class="copy-btn html" onclick="copySegmentHTML('deepspace')">Copy HTML</button>
+    </div>
+    ${imageHTML}
+    <div class="segment-content" id="content-deepspace" style="font-family: Helvetica, Arial, sans-serif;">
+      <h2 style="font-family: Helvetica, Arial, sans-serif; font-size: 20px; font-weight: 700; margin: 0 0 14px 0; letter-spacing: -0.3px; line-height: 1.3;">🔭 Deep Space Corner</h2>
       ${deepSpace.body_html}
-      <a href="${deepSpace.read_more_url}" class="read-more">Read more →</a>
+      <a href="${deepSpace.read_more_url}" style="display: inline-block; font-size: 13px; font-weight: 600; color: #f59e0b; text-decoration: none; margin-top: 4px; font-family: Helvetica, Arial, sans-serif;">Read more →</a>
     </div>
   </div>
 `;

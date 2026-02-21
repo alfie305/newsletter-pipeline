@@ -52,9 +52,9 @@ export class EditorialStage extends Stage {
       // Run editorial curation with Claude
       this.log('info', 'Running Claude editorial curation');
       const responseText = await this.claude.complete(prompt, {
-        systemPrompt: 'You are an expert editorial director for a professional newsletter. Return ONLY valid JSON, no markdown, no explanations.',
+        systemPrompt: 'You are an expert editorial director for a professional newsletter. Return ONLY valid JSON, no markdown, no explanations. Every main_story MUST include the image_prompt field.',
         temperature: 0.3,
-        maxTokens: 4000,
+        maxTokens: 8000,
       });
 
       // Parse JSON response
