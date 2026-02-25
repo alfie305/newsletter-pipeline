@@ -36,6 +36,9 @@ Categorize each story based on the content domain. Choose appropriate sections f
 - 🏡 **RESIDENTIAL** (single-family homes, condos, apartments, housing market)
 - 💰 **FINANCE** (mortgage rates, lending, REITs, real estate investment)
 - 🏗️ **DEVELOPMENT** (new construction, projects, urban planning, housing supply)
+- 🤖 **AI & TECH** (AI tools, PropTech, automation, software, real estate technology)
+- 📱 **MARKETING** (digital marketing, lead generation, social media, branding, client acquisition)
+- 📊 **BUSINESS GROWTH** (coaching, productivity, business strategies, scaling, agent success)
 
 ## Articles:
 {{ARTICLES_JSON}}
@@ -100,8 +103,8 @@ Return structured JSON with this EXACT structure.
 - ALL fields shown above are REQUIRED (except deep_space object is optional)
 - **EVERY main story MUST have an image_prompt field - this is NOT optional**
 - **Quick hits should come from diverse sources** - avoid using the same source multiple times
-- Choose section values based on story content: "market_trends", "policy", "commercial", "residential", "finance", "development"
-- Choose appropriate section emojis: 📈 (market_trends), 🏛️ (policy), 💼 (commercial), 🏡 (residential), 💰 (finance), 🏗️ (development)
+- Choose section values based on story content: "market_trends", "policy", "commercial", "residential", "finance", "development", "ai_tech", "marketing", "business_growth"
+- Choose appropriate section emojis: 📈 (market_trends), 🏛️ (policy), 💼 (commercial), 🏡 (residential), 💰 (finance), 🏗️ (development), 🤖 (ai_tech), 📱 (marketing), 📊 (business_growth)
 - Position must be sequential starting from 1
 - Scores must be integers 1-10
 - All URLs must be valid and from the source articles

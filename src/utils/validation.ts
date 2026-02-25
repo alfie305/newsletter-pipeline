@@ -7,7 +7,7 @@ export const DiscoveryStorySchema = z.object({
   summary: z.string(),
   source_url: z.string().url(),
   source_name: z.string(),
-  category: z.enum(['market_trends', 'policy', 'commercial', 'residential', 'finance', 'development']),
+  category: z.enum(['market_trends', 'policy', 'commercial', 'residential', 'finance', 'development', 'ai_tech', 'marketing', 'business_growth']),
   importance_score: z.number().min(1).max(10),
   published_date: z.string(),
   tags: z.array(z.string()),

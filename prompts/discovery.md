@@ -12,6 +12,9 @@ Search for the latest real estate and housing market news from the past 7 days.
 - Residential market activity, new home construction, development projects
 - Real estate investment, REITs, property market analysis
 - Rental market trends, multifamily housing, affordability
+- AI tools for real estate, PropTech innovations, automation, real estate software
+- Digital marketing strategies, lead generation tools, social media for agents, branding
+- Business coaching, productivity tips, scaling strategies, agent success stories
 
 **Return a JSON array with objects containing:**
 
@@ -21,7 +24,7 @@ Search for the latest real estate and housing market news from the past 7 days.
   "summary": "One-sentence summary",
   "source_url": "Direct URL to the best source article",
   "source_name": "Publication name",
-  "category": "market_trends|policy|commercial|residential|finance|development",
+  "category": "market_trends|policy|commercial|residential|finance|development|ai_tech|marketing|business_growth",
   "importance_score": 1-10,
   "published_date": "YYYY-MM-DD",
   "tags": ["tag1", "tag2", "tag3"]
