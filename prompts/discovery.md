@@ -1,16 +1,17 @@
 # Discovery Stage Prompt - Perplexity Sonar
 
-Search for the latest industry news and developments from the past 7 days.
+Search for the latest real estate and housing market news from the past 7 days.
 
 **Prioritize these sources:** {{ENABLED_SOURCES}}
 
 **Coverage areas:**
-- Rocket launches, vehicle deployments, test flights
-- Ongoing space missions, satellite operations, crew activities
-- Space policy, government regulations, international agreements
-- Commercial space deals, market trends, company announcements
-- Scientific research, discoveries, breakthroughs
-- Planetary exploration, deep space, astronomical discoveries
+- Housing market trends, home prices, sales data, inventory levels
+- Mortgage rates, lending conditions, financing trends
+- Real estate policy, zoning laws, legislation, regulations
+- Commercial real estate deals, office/retail trends, market shifts
+- Residential market activity, new home construction, development projects
+- Real estate investment, REITs, property market analysis
+- Rental market trends, multifamily housing, affordability
 
 **Return a JSON array with objects containing:**
 
@@ -20,7 +21,7 @@ Search for the latest industry news and developments from the past 7 days.
   "summary": "One-sentence summary",
   "source_url": "Direct URL to the best source article",
   "source_name": "Publication name",
-  "category": "launches|missions|policy|commercial|science|exploration",
+  "category": "market_trends|policy|commercial|residential|finance|development",
   "importance_score": 1-10,
   "published_date": "YYYY-MM-DD",
   "tags": ["tag1", "tag2", "tag3"]

@@ -611,19 +611,19 @@ ${quickHitsHTML}
     // Use API route for images
     const apiImagePath = imagePath ? `/api/editions/${editionDate}/images/deep_space.png` : '';
     const imageHTML = apiImagePath
-      ? `<img src="${apiImagePath}" alt="Deep Space" style="width:100%; border-radius:8px; margin-bottom:16px; height:160px; object-fit:cover;">`
-      : `<div class="img-placeholder" style="height:160px;"><span>{{IMAGE_DEEPSPACE}} — Nano Banana: deep space</span></div>`;
+      ? `<img src="${apiImagePath}" alt="Market Insights" style="width:100%; border-radius:8px; margin-bottom:16px; height:160px; object-fit:cover;">`
+      : `<div class="img-placeholder" style="height:160px;"><span>{{IMAGE_DEEPSPACE}} — Nano Banana: market insights</span></div>`;
 
-    return `  <!-- DEEP SPACE -->
+    return `  <!-- MARKET INSIGHTS -->
   <div class="segment" id="seg-deepspace">
-    <span class="segment-label deepspace-label">🔭 DEEP SPACE</span>
+    <span class="segment-label deepspace-label">📊 MARKET INSIGHTS</span>
     <div class="copy-buttons">
       <button class="copy-btn" onclick="copySegmentText('deepspace')">Copy Text</button>
       <button class="copy-btn html" onclick="copySegmentHTML('deepspace')">Copy HTML</button>
     </div>
     ${imageHTML}
     <div class="segment-content" id="content-deepspace" style="font-family: Helvetica, Arial, sans-serif;">
-      <h2 style="font-family: Helvetica, Arial, sans-serif; font-size: 20px; font-weight: 700; margin: 0 0 14px 0; letter-spacing: -0.3px; line-height: 1.3;">🔭 Deep Space Corner</h2>
+      <h2 style="font-family: Helvetica, Arial, sans-serif; font-size: 20px; font-weight: 700; margin: 0 0 14px 0; letter-spacing: -0.3px; line-height: 1.3;">📊 Market Insights</h2>
       ${deepSpace.body_html}
       <a href="${deepSpace.read_more_url}" style="display: inline-block; font-size: 13px; font-weight: 600; color: #f59e0b; text-decoration: none; margin-top: 4px; font-family: Helvetica, Arial, sans-serif;">Read more →</a>
     </div>
