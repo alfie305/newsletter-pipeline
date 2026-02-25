@@ -46,7 +46,7 @@ export async function createPipeline(): Promise<Pipeline> {
  */
 export async function executePipeline() {
   try {
-    logger.info('Starting Space Pulse pipeline execution');
+    logger.info('Starting Payload Pipeline execution');
 
     const pipeline = await createPipeline();
 

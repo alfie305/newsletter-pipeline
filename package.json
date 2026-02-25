@@ -1,7 +1,7 @@
 {
-  "name": "space-pulse",
+  "name": "payloadpipeline",
   "version": "1.0.0",
-  "description": "Automated space industry newsletter generation pipeline",
+  "description": "Automated newsletter generation pipeline",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",

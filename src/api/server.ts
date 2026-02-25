@@ -131,7 +131,7 @@ async function startServer() {
   logger.info('Storage initialized');
 
   httpServer.listen(PORT, () => {
-    logger.info(`🚀 Space Pulse API server running on http://localhost:${PORT}`);
+    logger.info(`🚀 Payload Pipeline API server running on http://localhost:${PORT}`);
     logger.info(`📡 WebSocket server ready for connections`);
   });
 }

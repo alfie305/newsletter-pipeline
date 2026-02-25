@@ -9,8 +9,8 @@ import logger from './utils/logger';
 const program = new Command();
 
 program
-  .name('space-pulse')
-  .description('Space Pulse newsletter generation pipeline')
+  .name('payloadpipeline')
+  .description('Payload Pipeline newsletter generation')
   .version('1.0.0');
 
 // Execute full pipeline

@@ -1,8 +1,8 @@
-# 🛰️ Space Pulse
+# 📰 Payload Pipeline
 
-**Automated space industry newsletter generation pipeline**
+**Automated newsletter generation pipeline**
 
-Space Pulse is a 5-stage AI-powered system that discovers, curates, writes, and illustrates a weekly space industry newsletter in the style of TLDR and The AI Rundown.
+Payload Pipeline is a 5-stage AI-powered system that discovers, curates, writes, and illustrates a weekly newsletter in the style of TLDR and The AI Rundown.
 
 ## Features
 
@@ -163,7 +163,7 @@ npm run pipeline:from editorial -- --edition 2026-02-17
 ## Project Structure
 
 ```
-space-pulse/
+payloadpipeline/
 ├── src/
 │   ├── pipeline/          # Pipeline orchestration
 │   ├── services/          # MCP server wrappers

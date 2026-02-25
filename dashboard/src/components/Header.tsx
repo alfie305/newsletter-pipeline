@@ -4,10 +4,10 @@ export function Header() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-gradient-to-br from-[#E8995C] to-[#D4915F] rounded-2xl flex items-center justify-center shadow-glow overflow-hidden">
-            <img src="/IMG_3987.jpg" alt="Space Pulse Logo" className="w-full h-full object-cover" />
+            <img src="/IMG_3987.jpg" alt="Payload Pipeline Logo" className="w-full h-full object-cover" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">Space Pulse</h1>
+            <h1 className="text-2xl font-bold text-white">Payload Pipeline</h1>
             <p className="text-sm text-[#9ca3af]">Mission Control</p>
           </div>
         </div>

@@ -39,7 +39,7 @@ export class ClaudeService {
             max_tokens: 8000,
             temperature: 0.7,
             system:
-              'You are the voice of Space Pulse newsletter. Write engaging, conversational content in TLDR style. Return ONLY valid JSON, no markdown, no explanations.',
+              'You are the voice of Payload Pipeline newsletter. Write engaging, conversational content in TLDR style. Return ONLY valid JSON, no markdown, no explanations.',
             messages: [
               {
                 role: 'user',
