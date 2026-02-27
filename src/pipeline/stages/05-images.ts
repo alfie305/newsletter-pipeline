@@ -14,13 +14,13 @@ export class ImagesStage extends Stage {
   readonly name = 'images';
   readonly description = 'Generating section images';
 
-  private nanoBanana: NanoBananaService;
+  private apiKey: string;
   private storage: FileStorage;
   private minSuccessfulImages = 3; // Minimum images needed (can use placeholders for rest)
 
   constructor(apiKey: string, storage: FileStorage) {
     super();
-    this.nanoBanana = new NanoBananaService(apiKey);
+    this.apiKey = apiKey;
     this.storage = storage;
   }
 
@@ -80,10 +80,18 @@ export class ImagesStage extends Stage {
         }
       }
 
+      // Read active generation model from storage
+      const modelsConfig = await this.storage.getGenerationModelsConfig();
+      const activeModel = modelsConfig.active_model;
+
       this.log('info', 'Images stage starting', {
         hasStylePreset: !!context.stylePresetId,
         willUseReferences: !!referenceImages,
+        model: activeModel,
       });
+
+      // Create service with selected model
+      const nanoBanana = new NanoBananaService(this.apiKey, activeModel);
 
       // Prepare image generation tasks
       const imagePrompts = editorialData.main_stories.map((story, index) => ({
@@ -107,10 +115,29 @@ export class ImagesStage extends Stage {
         });
       }
 
+      // Add city images if city sections exist
+      if (editorialData.city_sections && editorialData.city_sections.length > 0) {
+        this.log('info', 'Generating city-specific images', {
+          cityCount: editorialData.city_sections.length,
+        });
+
+        editorialData.city_sections.forEach((citySection) => {
+          const cityId = citySection.city.toLowerCase().replace(/\s+/g, '_');
+          const prompt = `A cute astronaut in orange spacesuit observing ${citySection.city} city skyline and real estate market, illustrated style, 16:9, no text`;
+
+          imagePrompts.push({
+            sectionId: `city_${cityId}`,
+            prompt: prompt,
+            outputPath: path.join(context.dataDir, 'images', `city_${cityId}.png`),
+            referenceImages: referenceImages, // Use same style preset
+          });
+        });
+      }
+
       this.log('info', 'Generating images', { count: imagePrompts.length });
 
       // Generate images with delays
-      const imageResults = await this.nanoBanana.generateMultiple(imagePrompts, 5000);
+      const imageResults = await nanoBanana.generateMultiple(imagePrompts, 5000);
 
       // Count successful images
       const successfulImages = imageResults.filter(
@@ -142,7 +169,7 @@ export class ImagesStage extends Stage {
             'images',
             `${result.section_id}.svg`
           );
-          const placeholder = await this.nanoBanana.createPlaceholder(
+          const placeholder = await nanoBanana.createPlaceholder(
             placeholderPath,
             result.section_id,
             emoji

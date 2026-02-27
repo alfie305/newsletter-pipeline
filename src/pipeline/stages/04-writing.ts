@@ -32,17 +32,33 @@ export class WritingStage extends Stage {
         throw new Error('No editorial data found');
       }
 
+      // Check if city sections exist
+      const hasCitySections = editorialData.city_sections && editorialData.city_sections.length > 0;
+
       this.log('info', 'Processing editorial package for writing', {
         mainStories: editorialData.main_stories.length,
         quickHits: editorialData.quick_hits.length,
+        citySections: hasCitySections ? editorialData.city_sections!.length : 0,
       });
+
+      if (hasCitySections) {
+        this.log('info', 'City sections detected for writing stage', {
+          cityCount: editorialData.city_sections!.length,
+          cities: editorialData.city_sections!.map(c => c.city).join(', ')
+        });
+      }
 
       // Load prompt template
       const promptTemplate = await this.loadPrompt();
-      const prompt = promptTemplate.replace(
+      let prompt = promptTemplate.replace(
         '{{EDITORIAL_JSON}}',
         JSON.stringify(editorialData, null, 2)
       );
+
+      // Add instruction flag for city sections
+      if (hasCitySections) {
+        prompt += `\n\n**IMPORTANT: The editorial includes ${editorialData.city_sections!.length} city_sections. Generate the city_markets segment in your output.**`;
+      }
 
       // Generate newsletter content
       this.log('info', 'Generating newsletter content with Claude');
@@ -66,11 +82,20 @@ export class WritingStage extends Stage {
         validated.subject_line = validated.subject_line.substring(0, 47) + '...';
       }
 
+      // Log city markets if generated
+      if (validated.segments.city_markets && validated.segments.city_markets.length > 0) {
+        this.log('info', 'City market segments generated', {
+          cityCount: validated.segments.city_markets.length,
+          cities: validated.segments.city_markets.map(c => c.city).join(', ')
+        });
+      }
+
       const duration = Date.now() - startTime;
       this.log('info', 'Writing stage completed', {
         subjectLine: validated.subject_line,
         storiesCount: validated.segments.stories.length,
         quickHitsCount: validated.segments.quick_hits.length,
+        cityMarketsCount: validated.segments.city_markets?.length || 0,
         duration_ms: duration,
       });
 

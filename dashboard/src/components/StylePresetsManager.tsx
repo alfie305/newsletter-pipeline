@@ -1,11 +1,22 @@
 import { useState } from 'react';
 import { useStylePresets } from '../hooks/useStylePresets';
+import { useGenerationModels } from '../hooks/useGenerationModels';
 
 export function StylePresetsManager() {
   const { presets, activePreset, setActive, create, uploadImage, deleteImage, delete: deletePreset } = useStylePresets();
+  const { activeModel, availableModels, setActive: setActiveModel } = useGenerationModels();
   const [isCreating, setIsCreating] = useState(false);
   const [newPresetName, setNewPresetName] = useState('');
   const [newPresetDesc, setNewPresetDesc] = useState('');
+
+  const getTierColor = (tier: string) => {
+    switch (tier) {
+      case 'standard': return '#10b981'; // green
+      case 'pro': return '#3b82f6';      // blue
+      case 'premium': return '#a855f7';  // purple
+      default: return '#6b7280';
+    }
+  };
 
   const handleCreate = async () => {
     if (!newPresetName.trim()) return;
@@ -24,6 +35,67 @@ export function StylePresetsManager() {
 
   return (
     <div className="max-w-7xl mx-auto px-8 py-8">
+      {/* Generation Model Selector */}
+      <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-6 mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-2xl">🤖</span>
+          <div>
+            <h3 className="text-lg font-semibold text-white">Image Generation Model</h3>
+            <p className="text-sm text-gray-400">
+              Choose the AI model for generating newsletter section images
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {availableModels.map((model) => (
+            <button
+              key={model.id}
+              onClick={() => setActiveModel(model.id)}
+              className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                activeModel === model.id
+                  ? 'border-[#E8995C] bg-[#E8995C]/10'
+                  : 'border-[#2a2a2a] bg-[#0a0a0a] hover:border-[#E8995C]/50'
+              }`}
+            >
+              {/* Header Row */}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <span className="text-lg">{activeModel === model.id ? '✓' : '○'}</span>
+                  <div>
+                    <h4 className="font-semibold text-white">{model.name}</h4>
+                    <span
+                      className="text-xs font-medium px-2 py-0.5 rounded-full"
+                      style={{
+                        backgroundColor: `${getTierColor(model.tier)}20`,
+                        color: getTierColor(model.tier),
+                      }}
+                    >
+                      {model.tier.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-[#E8995C]">
+                    {model.pricing.image_output}
+                  </p>
+                  <p className="text-xs text-gray-500">per image</p>
+                </div>
+              </div>
+
+              {/* Description */}
+              <p className="text-sm text-gray-400 mb-2 ml-8">{model.description}</p>
+
+              {/* Pricing Details */}
+              <div className="flex gap-4 text-xs text-gray-500 ml-8">
+                <span>Input: {model.pricing.text_input}</span>
+                <span>Output: {model.pricing.text_output}</span>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Image Style Presets</h1>

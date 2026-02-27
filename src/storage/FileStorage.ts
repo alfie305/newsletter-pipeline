@@ -11,7 +11,14 @@ import {
   TopicSchema,
   TopicsConfigSchema,
 } from '../pipeline/types';
-import { StylePreset, StylePresetsConfig, StylePresetsConfigSchema } from '../utils/validation';
+import {
+  StylePreset,
+  StylePresetsConfig,
+  StylePresetsConfigSchema,
+  GenerationModelsConfig,
+  GenerationModelsConfigSchema,
+  AVAILABLE_GENERATION_MODELS,
+} from '../utils/validation';
 import logger from '../utils/logger';
 
 /**
@@ -24,6 +31,7 @@ export class FileStorage extends StorageManager {
   private topicsFile: string;
   private stylePresetsFile: string;
   private stylePresetsDir: string;
+  private generationModelsConfigPath: string;
 
   constructor(dataDir: string = './data') {
     super();
@@ -33,6 +41,7 @@ export class FileStorage extends StorageManager {
     this.topicsFile = path.join(dataDir, 'topics.json');
     this.stylePresetsFile = path.join(dataDir, 'style_presets.json');
     this.stylePresetsDir = path.join(dataDir, 'style_presets');
+    this.generationModelsConfigPath = path.join(dataDir, 'generation-models-config.json');
   }
 
   async initialize(): Promise<void> {
@@ -533,6 +542,40 @@ export class FileStorage extends StorageManager {
     preset.reference_images.splice(imageIndex, 1);
     await this.writeJSON(this.stylePresetsFile, config);
     logger.info('Removed reference image from preset', { presetId, imagePath });
+  }
+
+  // Generation Models Configuration
+  async getGenerationModelsConfig(): Promise<GenerationModelsConfig> {
+    const defaultConfig: GenerationModelsConfig = {
+      active_model: 'gemini-2.5-flash-image', // Default to cheapest
+      last_updated: new Date().toISOString(),
+    };
+
+    try {
+      const data = await this.readJSON(this.generationModelsConfigPath);
+      return GenerationModelsConfigSchema.parse(data);
+    } catch (error) {
+      // File doesn't exist or invalid - create default
+      await this.writeJSON(this.generationModelsConfigPath, defaultConfig);
+      logger.info('Created default generation models config');
+      return defaultConfig;
+    }
+  }
+
+  async setActiveGenerationModel(modelId: string): Promise<void> {
+    // Validate model ID
+    const validModels = AVAILABLE_GENERATION_MODELS.map((m) => m.id);
+    if (!validModels.includes(modelId)) {
+      throw new Error(`Invalid model ID: ${modelId}. Must be one of: ${validModels.join(', ')}`);
+    }
+
+    const config: GenerationModelsConfig = {
+      active_model: modelId,
+      last_updated: new Date().toISOString(),
+    };
+
+    await this.writeJSON(this.generationModelsConfigPath, config);
+    logger.info('Set active generation model', { modelId });
   }
 
   // Helper methods

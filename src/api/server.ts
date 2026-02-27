@@ -4,6 +4,7 @@ import { createServer } from 'http';
 import { Server as SocketIO } from 'socket.io';
 import { createPipeline } from '../index';
 import { FileStorage } from '../storage/FileStorage';
+import { SupabaseService } from '../services/SupabaseService';
 import { config } from '../config/env';
 import logger from '../utils/logger';
 
@@ -14,6 +15,7 @@ import { pipelineRouter } from './routes/pipeline';
 import { editionsRouter } from './routes/editions';
 import promptsRouter from './routes/prompts';
 import { stylePresetsRouter } from './routes/style-presets';
+import { generationModelsRouter } from './routes/generation-models';
 
 const app = express();
 const httpServer = createServer(app);
@@ -34,6 +36,15 @@ app.use(express.json());
 // Initialize storage
 const storage = new FileStorage(config.dataDir);
 
+// Initialize Supabase (optional - for subscriber analytics)
+let supabase: SupabaseService | undefined;
+if (config.supabaseUrl && config.supabaseServiceRoleKey) {
+  supabase = new SupabaseService(config.supabaseUrl, config.supabaseServiceRoleKey);
+  logger.info('Supabase subscriber analytics enabled for API');
+} else {
+  logger.warn('Supabase not configured - city statistics disabled');
+}
+
 // Request logging middleware
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.path}`, {
@@ -53,10 +64,42 @@ app.use('/api/pipeline', pipelineRouter(storage, io));
 app.use('/api/editions', editionsRouter(storage));
 app.use('/api/prompts', promptsRouter);
 app.use('/api/style-presets', stylePresetsRouter(storage));
+app.use('/api/generation-models', generationModelsRouter(storage));
 
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+/**
+ * Get subscriber city statistics
+ */
+app.get('/api/statistics/cities', async (req, res) => {
+  try {
+    if (!supabase) {
+      return res.status(503).json({
+        error: 'Supabase not configured',
+        message: 'City statistics require Supabase configuration'
+      });
+    }
+
+    const limit = parseInt(req.query.limit as string) || 10;
+    const cities = await supabase.getTopCities(limit);
+    const analytics = await supabase.getAnalytics();
+
+    res.json({
+      total_cities: cities.length,
+      total_subscribers: analytics.total_subscribers,
+      top_cities: cities
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Failed to fetch city statistics', { error: errorMessage });
+    res.status(500).json({
+      error: 'Failed to fetch city statistics',
+      message: errorMessage
+    });
+  }
 });
 
 // WebSocket connection handling

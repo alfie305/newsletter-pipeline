@@ -49,4 +49,15 @@ export const editionsApi = {
     api.get(`/editions/${id}/results/${stage}`),
 };
 
+// Statistics API
+export const statisticsApi = {
+  getCities: (limit: number = 10) => api.get('/statistics/cities', { params: { limit } }),
+};
+
+// Generation Models API
+export const generationModelsApi = {
+  getConfig: () => api.get('/generation-models'),
+  setActive: (modelId: string) => api.put('/generation-models/active', { model_id: modelId }),
+};
+
 export default api;

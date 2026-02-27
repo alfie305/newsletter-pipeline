@@ -6,6 +6,7 @@ import { usePipeline } from './hooks/usePipeline';
 import { useStylePresets } from './hooks/useStylePresets';
 import { Header } from './components/Header';
 import { StatusCards } from './components/StatusCards';
+import { CityStatistics } from './components/CityStatistics';
 import { SourceSegmentCards } from './components/SourceSegmentCards';
 import { TopicPills } from './components/TopicPills';
 import { PipelineVisualization } from './components/PipelineVisualization';
@@ -116,6 +117,10 @@ function Dashboard() {
             lastRun={lastRunTime}
             onSourcesClick={() => setIsSourcesModalOpen(true)}
           />
+
+          <div className="mb-8">
+            <CityStatistics />
+          </div>
 
           <SourceSegmentCards
             sources={sources}

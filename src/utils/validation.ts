@@ -84,16 +84,28 @@ export const DeepSpaceSchema = z.object({
   image_prompt: z.string(),
 });
 
+// City-specific market insights (editorial stage)
+export const CitySectionSchema = z.object({
+  id: z.string(),
+  city: z.string(),
+  subscriber_count: z.number(),
+  percentage: z.number(),
+  insights: z.array(z.string()).min(2).max(4), // 2-4 key market insights
+  headline: z.string().optional(), // Optional headline for city section
+});
+
 export const EditorialResultSchema = z.object({
   generated_at: z.string(),
   edition_date: z.string(),
   main_stories: z.array(EditorialStorySchema),
   quick_hits: z.array(QuickHitSchema),
   deep_space: DeepSpaceSchema.nullish(), // Allow both null and undefined
+  city_sections: z.array(CitySectionSchema).min(0).max(5).optional(), // 0-5 city sections
   story_count: z.object({
     main: z.number(),
     quick_hits: z.number(),
     deep_space: z.number(),
+    city_markets: z.number().optional(), // count of city sections
     total: z.number(),
   }),
 });
@@ -118,6 +130,17 @@ export const QuickHitContentSchema = z.object({
   source_label: z.string(),
 });
 
+// City market segment (writing stage)
+export const CityMarketSegmentSchema = z.object({
+  position: z.number(),
+  city: z.string(),
+  subscriber_percentage: z.string(), // e.g., "12% of readers"
+  headline: z.string(),
+  body_html: z.string(),
+  insights_html: z.string(), // Bulleted list of 2-4 insights
+  image_placeholder: z.string().optional(), // e.g., "city_new_york"
+});
+
 export const NewsletterContentSchema = z.object({
   generated_at: z.string(),
   subject_line: z.string().max(50),
@@ -132,6 +155,7 @@ export const NewsletterContentSchema = z.object({
       rundown_items: z.array(z.string()),
     }),
     stories: z.array(NewsletterSegmentSchema),
+    city_markets: z.array(CityMarketSegmentSchema).optional(), // City market segments
     quick_hits: z.array(QuickHitContentSchema),
     deep_space: z.object({
       headline: z.string(),
@@ -208,6 +232,63 @@ export const StylePresetsConfigSchema = z.object({
   active_preset_id: z.string().optional().nullable(),
 });
 
+// Generation Models Configuration
+export interface GenerationModelOption {
+  id: string;
+  name: string;
+  description: string;
+  pricing: {
+    text_input: string;
+    text_output: string;
+    image_output: string;
+  };
+  tier: 'standard' | 'pro' | 'premium';
+}
+
+export const GenerationModelsConfigSchema = z.object({
+  active_model: z.string(),
+  last_updated: z.string(),
+});
+
+export type GenerationModelsConfig = z.infer<typeof GenerationModelsConfigSchema>;
+
+// Available models (hardcoded list)
+export const AVAILABLE_GENERATION_MODELS: GenerationModelOption[] = [
+  {
+    id: 'gemini-2.5-flash-image',
+    name: 'Nano Banana',
+    description: 'State-of-the-art image generation and editing model',
+    pricing: {
+      text_input: '$0.30 / 1M tokens',
+      text_output: '$2.50 / 1M tokens',
+      image_output: '$0.039 per image',
+    },
+    tier: 'standard',
+  },
+  {
+    id: 'gemini-3.1-flash-image-preview',
+    name: 'Nano Banana 2',
+    description: 'Pro-level visual intelligence with Flash-speed efficiency',
+    pricing: {
+      text_input: '$0.50 / 1M tokens',
+      text_output: '$3.00 / 1M tokens',
+      image_output: '$0.0672 per image',
+    },
+    tier: 'pro',
+  },
+  {
+    id: 'gemini-3-pro-image-preview',
+    name: 'Nano Banana Pro',
+    description: 'State-of-the-art image generation and editing model',
+    pricing: {
+      text_input: '$2.00 / 1M tokens',
+      text_output: '$12.00 / 1M tokens',
+      image_output: '$0.134 per image',
+    },
+    tier: 'premium',
+  },
+];
+
 // Edition metadata
 export const EditionSchema = z.object({
   id: z.string(),
@@ -227,9 +308,11 @@ export type ArticlesResult = z.infer<typeof ArticlesResultSchema>;
 export type EditorialStory = z.infer<typeof EditorialStorySchema>;
 export type QuickHit = z.infer<typeof QuickHitSchema>;
 export type DeepSpace = z.infer<typeof DeepSpaceSchema>;
+export type CitySection = z.infer<typeof CitySectionSchema>;
 export type EditorialResult = z.infer<typeof EditorialResultSchema>;
 export type NewsletterSegment = z.infer<typeof NewsletterSegmentSchema>;
 export type QuickHitContent = z.infer<typeof QuickHitContentSchema>;
+export type CityMarketSegment = z.infer<typeof CityMarketSegmentSchema>;
 export type NewsletterContent = z.infer<typeof NewsletterContentSchema>;
 export type ImageResult = z.infer<typeof ImageResultSchema>;
 export type Source = z.infer<typeof SourceSchema>;

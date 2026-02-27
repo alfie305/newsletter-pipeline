@@ -80,7 +80,7 @@ export function editionsRouter(storage: FileStorage) {
       const { id, filename } = req.params;
 
       // Security: only allow specific image files
-      if (!/^(section_\d+|deep_space)\.(png|svg)$/.test(filename)) {
+      if (!/^(section_\d+|deep_space|city_[a-z_]+)\.(png|svg)$/.test(filename)) {
         return res.status(400).json({ error: 'Invalid filename' });
       }
 
