@@ -40,6 +40,8 @@ Categorize each story based on the content domain. Choose appropriate sections f
 - 📱 **MARKETING** (digital marketing, lead generation, social media, branding, client acquisition)
 - 📊 **BUSINESS GROWTH** (coaching, productivity, business strategies, scaling, agent success)
 
+{{SUBSCRIBER_ANALYTICS}}
+
 ## Articles:
 {{ARTICLES_JSON}}
 

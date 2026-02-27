@@ -3,21 +3,25 @@ import path from 'path';
 import { Stage } from '../Stage';
 import { EditionContext, StageResult } from '../types';
 import { ClaudeService } from '../../services/ClaudeService';
+import { SupabaseService, SubscriberAnalytics } from '../../services/SupabaseService';
 import { EditorialResultSchema, ArticlesResult } from '../../utils/validation';
 
 /**
  * Stage 3: Editorial
  * Uses Claude to deduplicate, rank, and select stories
+ * Now includes subscriber data for personalized content
  */
 export class EditorialStage extends Stage {
   readonly name = 'editorial';
   readonly description = 'Curating and ranking stories';
 
   private claude: ClaudeService;
+  private supabase?: SupabaseService;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, supabase?: SupabaseService) {
     super();
     this.claude = new ClaudeService(apiKey);
+    this.supabase = supabase;
   }
 
   async execute(context: EditionContext): Promise<StageResult> {
@@ -42,12 +46,37 @@ export class EditorialStage extends Stage {
         successfulArticles: successfulArticles.length,
       });
 
+      // Get subscriber analytics if available
+      let subscriberAnalytics: SubscriberAnalytics | undefined;
+      if (this.supabase) {
+        this.log('info', 'Fetching subscriber analytics from Supabase');
+        subscriberAnalytics = await this.supabase.getAnalytics();
+        this.log('info', 'Subscriber analytics retrieved', {
+          total: subscriberAnalytics.total_subscribers,
+          topCities: subscriberAnalytics.top_cities.length,
+          topRoles: subscriberAnalytics.top_roles.length,
+          topInterests: subscriberAnalytics.top_interests.length,
+        });
+      }
+
       // Load prompt template
       const promptTemplate = await this.loadPrompt();
-      const prompt = promptTemplate.replace(
+      let prompt = promptTemplate.replace(
         '{{ARTICLES_JSON}}',
         JSON.stringify(successfulArticles, null, 2)
       );
+
+      // Add subscriber analytics to prompt if available
+      if (subscriberAnalytics && subscriberAnalytics.total_subscribers > 0) {
+        const analyticsContext = this.buildAnalyticsContext(subscriberAnalytics);
+        prompt = prompt.replace(
+          '{{SUBSCRIBER_ANALYTICS}}',
+          analyticsContext
+        );
+      } else {
+        // Remove the placeholder if no analytics
+        prompt = prompt.replace('{{SUBSCRIBER_ANALYTICS}}', 'No subscriber data available yet.');
+      }
 
       // Run editorial curation with Claude
       this.log('info', 'Running Claude editorial curation');
@@ -123,6 +152,45 @@ export class EditorialStage extends Stage {
   private async loadPrompt(): Promise<string> {
     const promptPath = path.join(process.cwd(), 'prompts', 'editorial.md');
     return fs.readFile(promptPath, 'utf-8');
+  }
+
+  /**
+   * Build context string from subscriber analytics
+   */
+  private buildAnalyticsContext(analytics: SubscriberAnalytics): string {
+    const lines: string[] = [];
+
+    lines.push(`\n## SUBSCRIBER AUDIENCE PROFILE`);
+    lines.push(`Total Subscribers: ${analytics.total_subscribers}`);
+
+    if (analytics.top_cities.length > 0) {
+      lines.push(`\n### Top Cities (by subscriber count):`);
+      analytics.top_cities.forEach((city, i) => {
+        lines.push(`${i + 1}. ${city.city}: ${city.subscriber_count} subscribers (${city.percentage}%)`);
+      });
+      lines.push(`\nIMPORTANT: Consider adding city-specific market data for the top 3-5 cities when relevant.`);
+    }
+
+    if (analytics.top_roles.length > 0) {
+      lines.push(`\n### Top Roles:`);
+      analytics.top_roles.forEach((role, i) => {
+        lines.push(`${i + 1}. ${role.role}: ${role.subscriber_count} subscribers (${role.percentage}%)`);
+      });
+    }
+
+    if (analytics.top_interests.length > 0) {
+      lines.push(`\n### Top Interests:`);
+      analytics.top_interests.forEach((interest, i) => {
+        lines.push(`${i + 1}. ${interest.interest}: ${interest.subscriber_count} subscribers (${interest.percentage}%)`);
+      });
+    }
+
+    lines.push(`\nUse this audience profile to:
+- Prioritize stories that match subscriber interests
+- Add city-specific market insights for top cities when available
+- Tailor tone and content to the professional roles represented`);
+
+    return lines.join('\n');
   }
 
   async rollback(context: EditionContext): Promise<void> {

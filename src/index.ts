@@ -1,5 +1,6 @@
 import { Pipeline } from './pipeline/Pipeline';
 import { FileStorage } from './storage/FileStorage';
+import { SupabaseService } from './services/SupabaseService';
 import { DiscoveryStage } from './pipeline/stages/01-discovery';
 import { CrawlStage } from './pipeline/stages/02-crawl';
 import { EditorialStage } from './pipeline/stages/03-editorial';
@@ -25,13 +26,22 @@ export async function createPipeline(): Promise<Pipeline> {
   const storage = new FileStorage(config.dataDir);
   await storage.initialize();
 
+  // Initialize Supabase (optional - for subscriber analytics)
+  let supabase: SupabaseService | undefined;
+  if (config.supabaseUrl && config.supabaseServiceRoleKey) {
+    supabase = new SupabaseService(config.supabaseUrl, config.supabaseServiceRoleKey);
+    logger.info('Supabase subscriber analytics enabled');
+  } else {
+    logger.warn('Supabase not configured - subscriber personalization disabled');
+  }
+
   // Create pipeline
   const pipeline = new Pipeline(storage);
 
   // Register stages
   pipeline.registerStage(new DiscoveryStage(config.perplexityApiKey, storage));
   pipeline.registerStage(new CrawlStage(config.firecrawlApiKey));
-  pipeline.registerStage(new EditorialStage(config.anthropicApiKey)); // Using Claude instead of OpenAI
+  pipeline.registerStage(new EditorialStage(config.anthropicApiKey, supabase)); // Pass Supabase for personalization
   pipeline.registerStage(new WritingStage(config.anthropicApiKey));
   pipeline.registerStage(new ImagesStage(config.geminiApiKey, storage));
   pipeline.registerStage(new AssemblyStage());

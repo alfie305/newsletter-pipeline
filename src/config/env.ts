@@ -15,6 +15,10 @@ export const config = {
   beehiivApiKey: process.env.BEEHIIV_API_KEY || '',
   beehiivPubId: process.env.BEEHIIV_PUB_ID || '',
 
+  // Supabase (subscriber data)
+  supabaseUrl: process.env.SUPABASE_URL || '',
+  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+
   // Server Configuration
   nodeEnv: process.env.NODE_ENV || 'development',
   apiPort: parseInt(process.env.API_PORT || '3000', 10),
