@@ -42,6 +42,39 @@ Categorize each story based on the content domain. Choose appropriate sections f
 
 {{SUBSCRIBER_ANALYTICS}}
 
+### 6. GENERATE CITY SECTIONS
+For the **top 3-5 subscriber cities** (provided in subscriber analytics above), generate city-specific market insights:
+
+**Requirements:**
+- **Select cities**: Use the top 3-5 cities by subscriber count from the analytics
+- **Generate insights**: For each city, provide 2-4 specific, actionable market insights
+- **Source from stories**: Reference relevant main stories when applicable
+- **Local data**: Prioritize local market data, price trends, inventory changes, policy impacts
+- **Format**: Each insight should be a concise, factual statement (1 sentence)
+- **Headline**: Optional brief headline summarizing the city's market trend
+
+**Example city section:**
+```json
+{
+  "id": "city-austin",
+  "city": "Austin",
+  "subscriber_count": 280,
+  "percentage": 8,
+  "insights": [
+    "Home prices down 3.2% YoY as inventory increases 42%",
+    "Tech sector layoffs reducing demand for luxury rentals",
+    "New zoning proposal could add 15,000 housing units by 2027"
+  ],
+  "headline": "Austin Cooling: Inventory Surge Pressures Prices"
+}
+```
+
+**CRITICAL:**
+- Generate city sections ONLY for top subscriber cities (provided in analytics)
+- Each city must have 2-4 insights (not more, not less)
+- Insights must be specific to that market, not generic real estate trends
+- If insufficient city-specific data available, skip that city
+
 ## Articles:
 {{ARTICLES_JSON}}
 
@@ -92,19 +125,35 @@ Return structured JSON with this EXACT structure.
     "source_url": "https://example.com/article",
     "image_prompt": "A cute astronaut in orange spacesuit observing [real estate story subject], illustrated style, 16:9, no text"
   },
+  "city_sections": [
+    {
+      "id": "city-new-york",
+      "city": "New York",
+      "subscriber_count": 450,
+      "percentage": 12,
+      "insights": [
+        "Manhattan office vacancy hits 15-year high at 18.2%",
+        "Brooklyn residential prices stabilize after 18-month decline",
+        "Multi-family development pipeline at 5-year low"
+      ],
+      "headline": "NYC Market: Office Vacancies Surge as Residential Stabilizes"
+    }
+  ],
   "story_count": {
     "main": 5,
     "quick_hits": 4,
     "deep_space": 1,
-    "total": 10
+    "city_markets": 3,
+    "total": 13
   }
 }
 ```
 
 **CRITICAL REQUIREMENTS:**
-- ALL fields shown above are REQUIRED (except deep_space object is optional)
+- ALL fields shown above are REQUIRED (except deep_space and city_sections are optional)
 - **EVERY main story MUST have an image_prompt field - this is NOT optional**
 - **Quick hits should come from diverse sources** - avoid using the same source multiple times
+- **City sections are REQUIRED if subscriber analytics provided** - generate 3-5 city sections based on top subscriber cities
 - Choose section values based on story content: "market_trends", "policy", "commercial", "residential", "finance", "development", "ai_tech", "marketing", "business_growth"
 - Choose appropriate section emojis: 📈 (market_trends), 🏛️ (policy), 💼 (commercial), 🏡 (residential), 💰 (finance), 🏗️ (development), 🤖 (ai_tech), 📱 (marketing), 📊 (business_growth)
 - Position must be sequential starting from 1
@@ -113,6 +162,7 @@ Return structured JSON with this EXACT structure.
 - Image prompts MUST feature the astronaut character(s) in orange spacesuit interacting with real estate scenes
 - Image prompts must NOT include text, logos, or watermarks
 - **If you forget to include image_prompt for ANY main story, the entire output will be rejected**
+- **City sections must include 2-4 insights per city and match subscriber analytics cities**
 
 **Respond with ONLY the JSON, no markdown, no explanations.**
 

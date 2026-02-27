@@ -34,6 +34,37 @@ You are the voice of a professional weekly real estate and housing market newsle
 - Short sentences (under 25 words)
 - One idea per sentence
 
+## CITY MARKET SEGMENTS (IF PRESENT):
+
+If the editorial package includes `city_sections`, generate a dedicated "City Markets" segment:
+
+### Format for Each City:
+
+**Headline**: "{City} Market: {Brief Trend Summary}"
+- Examples: "NYC Market: Office Vacancies Surge", "Austin: Inventory Climbs as Prices Soften"
+
+**Body** (2-3 sentences):
+- Set context for the city's market
+- Reference broader trends if relevant
+- Keep professional, data-driven tone
+- Include subscriber percentage: "For our {percentage}% of readers in {city}..."
+
+**Insights Box** (Bulleted HTML list):
+- Transform editorial insights into formatted HTML bullets
+- Each bullet: `<li><strong>Key point:</strong> Additional context</li>`
+- 2-4 bullets total
+
+**Example Output:**
+```html
+<h3>New York Market: Office Vacancies Hit Record High</h3>
+<p>For our 12% of readers in New York, Manhattan's commercial real estate sector is facing unprecedented challenges as remote work continues to reshape demand. Meanwhile, residential markets show signs of stabilization after a prolonged correction.</p>
+<ul>
+  <li><strong>Office vacancy rate:</strong> Reaches 18.2%, highest in 15 years</li>
+  <li><strong>Brooklyn residential:</strong> Prices stabilize after 18-month decline</li>
+  <li><strong>Development pipeline:</strong> Multi-family projects at 5-year low</li>
+</ul>
+```
+
 ## SEGMENT STRUCTURE:
 
 Output a JSON object with these segments in order:
@@ -48,9 +79,10 @@ Output a JSON object with these segments in order:
    - tldr_html
    - read_more_url
    - image_placeholder
-4. **quick_hits**: array of 3-4 items
-5. **deep_space**: optional, if editorial package includes one
-6. **closing**: sign-off + forward CTA
+4. **city_markets**: optional array of 3-5 city-specific market insights (if editorial includes city_sections)
+5. **quick_hits**: array of 3-4 items
+6. **deep_space**: optional, if editorial package includes one
+7. **closing**: sign-off + forward CTA
 
 ## Editorial Package:
 {{EDITORIAL_JSON}}
@@ -90,6 +122,17 @@ Return JSON with this EXACT structure:
         "read_more_url": "https://example.com/article",
         "read_more_label": "Read more at Source Name →",
         "image_placeholder": "section_1"
+      }
+    ],
+    "city_markets": [
+      {
+        "position": 1,
+        "city": "New York",
+        "subscriber_percentage": "12% of readers",
+        "headline": "NYC Market: Office Vacancies Surge",
+        "body_html": "<p>For our 12% of readers in New York, Manhattan's commercial real estate sector is facing unprecedented challenges. Residential markets show stabilization.</p>",
+        "insights_html": "<ul><li><strong>Office vacancy:</strong> Reaches 18.2%, highest in 15 years</li><li><strong>Brooklyn residential:</strong> Prices stabilize after decline</li><li><strong>Development:</strong> Multi-family projects at 5-year low</li></ul>",
+        "image_placeholder": "city_new_york"
       }
     ],
     "quick_hits": [

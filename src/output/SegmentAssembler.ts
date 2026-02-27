@@ -1,5 +1,5 @@
 import fs from 'fs/promises';
-import { NewsletterContent, ImageResult } from '../pipeline/types';
+import { NewsletterContent, ImageResult, CityMarketSegment } from '../pipeline/types';
 import logger from '../utils/logger';
 
 /**
@@ -37,6 +37,10 @@ export class SegmentAssembler {
     const storySegments = content.segments.stories
       .map((story, idx) => this.buildStorySegment(story, idx + 1, imageResult, editionDate))
       .join('\n\n');
+
+    const cityMarketsSegment = content.segments.city_markets && content.segments.city_markets.length > 0
+      ? this.buildCityMarketsSection(content.segments.city_markets, imageResult, editionDate)
+      : '';
 
     const quickHitsHTML = content.segments.quick_hits
       .map(
@@ -387,6 +391,8 @@ ${rundownItems}
 
   ${storySegments}
 
+  ${cityMarketsSegment}
+
   <!-- SPONSOR SLOT -->
   <div class="segment" id="seg-sponsor">
     <span class="segment-label ad-label">SPONSOR SLOT</span>
@@ -628,6 +634,76 @@ ${quickHitsHTML}
       <a href="${deepSpace.read_more_url}" style="display: inline-block; font-size: 13px; font-weight: 600; color: #f59e0b; text-decoration: none; margin-top: 4px; font-family: Helvetica, Arial, sans-serif;">Read more →</a>
     </div>
   </div>
+`;
+  }
+
+  private buildCityMarketsSection(cityMarkets: CityMarketSegment[], imageResult: ImageResult, editionDate: string): string {
+    const cityHTML = cityMarkets.map((city, index) => {
+      // Look up city image if available
+      const cityId = city.city.toLowerCase().replace(/\s+/g, '_');
+      const cityImageId = `city_${cityId}`;
+      const imageData = imageResult.images.find((img) => img.section_id === cityImageId);
+      const imagePath = imageData?.file_path || '';
+      const apiImagePath = imagePath ? `/api/editions/${editionDate}/images/${cityImageId}.png` : '';
+      const imageHTML = apiImagePath
+        ? `<img src="${apiImagePath}" alt="${city.city} market" style="width:100%; border-radius:8px; margin-bottom:16px;">`
+        : '';
+
+      return `    <!-- CITY: ${city.city.toUpperCase()} -->
+    <div style="margin-bottom: 32px; padding-bottom: 32px; border-bottom: 1px solid #e5e5e5;">
+      <!-- City Header -->
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; font-family: Helvetica, Arial, sans-serif;">
+        <span style="font-size: 24px;">🏙️</span>
+        <div>
+          <h3 style="margin: 0; font-size: 20px; font-weight: 600; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif;">
+            ${city.city}
+          </h3>
+          <p style="margin: 4px 0 0 0; font-size: 13px; color: #888; font-family: Helvetica, Arial, sans-serif;">
+            ${city.subscriber_percentage}
+          </p>
+        </div>
+      </div>
+
+      ${imageHTML ? `<!-- City Image -->\n      ${imageHTML}\n\n      ` : ''}<!-- Headline -->
+      <h4 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 600; color: #f59e0b; font-family: Helvetica, Arial, sans-serif;">
+        ${city.headline}
+      </h4>
+
+      <!-- Body -->
+      <div style="margin-bottom: 16px; line-height: 1.6; color: #2a2a2a; font-family: Helvetica, Arial, sans-serif;">
+        ${city.body_html}
+      </div>
+
+      <!-- Insights Box -->
+      <div style="background: #f8f8f8; border-left: 3px solid #f59e0b; padding: 16px; border-radius: 4px; font-family: Helvetica, Arial, sans-serif;">
+        <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 600; text-transform: uppercase; color: #f59e0b; letter-spacing: 0.5px; font-family: Helvetica, Arial, sans-serif;">
+          Market Snapshot
+        </p>
+        ${city.insights_html}
+      </div>
+    </div>`;
+    }).join('\n\n');
+
+    return `  <!-- CITY MARKETS -->
+  <div class="segment" id="seg-citymarkets">
+    <span class="segment-label" style="background: #3b82f6;">🏙️ CITY MARKETS</span>
+    <div class="copy-buttons">
+      <button class="copy-btn" onclick="copySegmentText('citymarkets')">Copy Text</button>
+      <button class="copy-btn html" onclick="copySegmentHTML('citymarkets')">Copy HTML</button>
+    </div>
+    <div class="segment-content" id="content-citymarkets" style="font-family: Helvetica, Arial, sans-serif;">
+      <div style="text-align: center; margin-bottom: 32px; font-family: Helvetica, Arial, sans-serif;">
+        <h2 style="font-size: 24px; font-weight: 700; color: #0a0a0a; margin: 0; font-family: Helvetica, Arial, sans-serif;">
+          🏙️ City Markets
+        </h2>
+        <p style="margin: 8px 0 0 0; color: #888; font-size: 14px; font-family: Helvetica, Arial, sans-serif;">
+          Market updates for your top subscriber cities
+        </p>
+      </div>
+${cityHTML}
+    </div>
+  </div>
+
 `;
   }
 }

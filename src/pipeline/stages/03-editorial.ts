@@ -120,11 +120,20 @@ export class EditorialStage extends Stage {
         );
       }
 
+      // Log city sections if generated
+      if (validated.city_sections && validated.city_sections.length > 0) {
+        this.log('info', 'City sections generated', {
+          cityCount: validated.city_sections.length,
+          cities: validated.city_sections.map(c => c.city).join(', ')
+        });
+      }
+
       const duration = Date.now() - startTime;
       this.log('info', 'Editorial stage completed', {
         mainStories: validated.main_stories.length,
         quickHits: validated.quick_hits.length,
         hasDeepSpace: !!validated.deep_space,
+        citySections: validated.city_sections?.length || 0,
         duration_ms: duration,
       });
 
@@ -164,11 +173,20 @@ export class EditorialStage extends Stage {
     lines.push(`Total Subscribers: ${analytics.total_subscribers}`);
 
     if (analytics.top_cities.length > 0) {
-      lines.push(`\n### Top Cities (by subscriber count):`);
-      analytics.top_cities.forEach((city, i) => {
+      lines.push(`\n### Top Subscriber Cities (GENERATE CITY SECTIONS FOR THESE):`);
+
+      // Limit to top 5 cities for city sections
+      const topCities = analytics.top_cities.slice(0, 5);
+
+      topCities.forEach((city, i) => {
         lines.push(`${i + 1}. ${city.city}: ${city.subscriber_count} subscribers (${city.percentage}%)`);
       });
-      lines.push(`\nIMPORTANT: Consider adding city-specific market data for the top 3-5 cities when relevant.`);
+
+      lines.push(`\n**REQUIRED: Generate dedicated city_sections for the top 3-5 cities listed above.**`);
+      lines.push(`Each city section should include:`);
+      lines.push(`- 2-4 specific market insights for that city`);
+      lines.push(`- Local price trends, inventory changes, or policy impacts`);
+      lines.push(`- Optional headline summarizing the market trend`);
     }
 
     if (analytics.top_roles.length > 0) {
@@ -187,7 +205,7 @@ export class EditorialStage extends Stage {
 
     lines.push(`\nUse this audience profile to:
 - Prioritize stories that match subscriber interests
-- Add city-specific market insights for top cities when available
+- Generate city-specific market sections (REQUIRED)
 - Tailor tone and content to the professional roles represented`);
 
     return lines.join('\n');

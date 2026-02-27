@@ -25,10 +25,11 @@ export interface ReferenceImage {
 export class NanoBananaService {
   private apiKey: string;
   private baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
-  private model = 'gemini-2.5-flash-image';
+  private model: string;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, model?: string) {
     this.apiKey = apiKey;
+    this.model = model || 'gemini-2.5-flash-image'; // Default to cheapest
   }
 
   /**
