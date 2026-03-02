@@ -21,14 +21,14 @@ const app = express();
 const httpServer = createServer(app);
 const io = new SocketIO(httpServer, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
     credentials: true,
   },
 });
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: ['http://localhost:5173', 'http://localhost:5174'],
   credentials: true,
 }));
 app.use(express.json());
@@ -111,7 +111,7 @@ io.on('connection', (socket) => {
   });
 
   // Pipeline execution via WebSocket
-  socket.on('pipeline:execute', async (data: { customTopics?: string[]; stylePresetId?: string }) => {
+  socket.on('pipeline:execute', async (data: { customTopics?: string[]; stylePresetId?: string; includeCityMarkets?: boolean }) => {
     try {
       logger.info('Pipeline execution requested via WebSocket', {
         customTopics: data.customTopics,
@@ -130,6 +130,7 @@ io.on('connection', (socket) => {
       const edition = await pipeline.execute({
         customTopics: data.customTopics,
         stylePresetId: data.stylePresetId,
+        includeCityMarkets: data.includeCityMarkets ?? false,
       });
 
       // Notify completion

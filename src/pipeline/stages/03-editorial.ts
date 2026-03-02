@@ -67,8 +67,10 @@ export class EditorialStage extends Stage {
       );
 
       // Add subscriber analytics to prompt if available
+      const includeCityMarkets = (context as any).options?.includeCityMarkets ?? false;
+
       if (subscriberAnalytics && subscriberAnalytics.total_subscribers > 0) {
-        const analyticsContext = this.buildAnalyticsContext(subscriberAnalytics);
+        const analyticsContext = this.buildAnalyticsContext(subscriberAnalytics, includeCityMarkets);
         prompt = prompt.replace(
           '{{SUBSCRIBER_ANALYTICS}}',
           analyticsContext
@@ -166,13 +168,13 @@ export class EditorialStage extends Stage {
   /**
    * Build context string from subscriber analytics
    */
-  private buildAnalyticsContext(analytics: SubscriberAnalytics): string {
+  private buildAnalyticsContext(analytics: SubscriberAnalytics, includeCityMarkets: boolean = false): string {
     const lines: string[] = [];
 
     lines.push(`\n## SUBSCRIBER AUDIENCE PROFILE`);
     lines.push(`Total Subscribers: ${analytics.total_subscribers}`);
 
-    if (analytics.top_cities.length > 0) {
+    if (includeCityMarkets && analytics.top_cities.length > 0) {
       lines.push(`\n### Top Subscriber Cities (GENERATE CITY SECTIONS FOR THESE):`);
 
       // Limit to top 5 cities for city sections
@@ -187,6 +189,8 @@ export class EditorialStage extends Stage {
       lines.push(`- 2-4 specific market insights for that city`);
       lines.push(`- Local price trends, inventory changes, or policy impacts`);
       lines.push(`- Optional headline summarizing the market trend`);
+    } else if (!includeCityMarkets) {
+      lines.push(`\n**DO NOT generate city_sections. Return an empty array [] for city_sections.**`);
     }
 
     if (analytics.top_roles.length > 0) {
@@ -205,8 +209,7 @@ export class EditorialStage extends Stage {
 
     lines.push(`\nUse this audience profile to:
 - Prioritize stories that match subscriber interests
-- Generate city-specific market sections (REQUIRED)
-- Tailor tone and content to the professional roles represented`);
+${includeCityMarkets ? '- Generate city-specific market sections (REQUIRED)\n' : ''}- Tailor tone and content to the professional roles represented`);
 
     return lines.join('\n');
   }

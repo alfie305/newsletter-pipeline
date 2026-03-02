@@ -71,7 +71,7 @@ export function usePipeline() {
   }, []);
 
   const execute = useCallback(
-    (customTopics?: string[], stylePresetId?: string) => {
+    (customTopics?: string[], stylePresetId?: string, includeCityMarkets?: boolean) => {
       if (!socket) {
         console.error('Socket not connected');
         return;
@@ -84,7 +84,7 @@ export function usePipeline() {
       setIsRunning(true);
       setCurrentEditionId(null);
 
-      socket.emit('pipeline:execute', { customTopics, stylePresetId });
+      socket.emit('pipeline:execute', { customTopics, stylePresetId, includeCityMarkets });
     },
     [socket]
   );

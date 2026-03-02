@@ -28,6 +28,7 @@ function Dashboard() {
   const [lastRunTime, setLastRunTime] = useState<string | undefined>(undefined);
   const [isSourcesModalOpen, setIsSourcesModalOpen] = useState(false);
   const [currentView, setCurrentView] = useState<View>('dashboard');
+  const [includeCityMarkets, setIncludeCityMarkets] = useState(false);
 
   // Update last run time when pipeline completes
   useEffect(() => {
@@ -40,7 +41,8 @@ function Dashboard() {
     const enabledTopics = topics.filter(t => t.enabled).map(t => t.text);
     execute(
       enabledTopics.length > 0 ? enabledTopics : undefined,
-      activePreset?.id
+      activePreset?.id,
+      includeCityMarkets
     );
   };
 
@@ -75,31 +77,28 @@ function Dashboard() {
           <div className="flex gap-6">
             <button
               onClick={() => setCurrentView('dashboard')}
-              className={`px-4 py-4 font-medium transition-all border-b-2 ${
-                currentView === 'dashboard'
+              className={`px-4 py-4 font-medium transition-all border-b-2 ${currentView === 'dashboard'
                   ? 'border-[#E8995C] text-white'
                   : 'border-transparent text-[#9ca3af] hover:text-white'
-              }`}
+                }`}
             >
               📊 Dashboard
             </button>
             <button
               onClick={() => setCurrentView('prompts')}
-              className={`px-4 py-4 font-medium transition-all border-b-2 ${
-                currentView === 'prompts'
+              className={`px-4 py-4 font-medium transition-all border-b-2 ${currentView === 'prompts'
                   ? 'border-[#E8995C] text-white'
                   : 'border-transparent text-[#9ca3af] hover:text-white'
-              }`}
+                }`}
             >
               ✨ Prompts
             </button>
             <button
               onClick={() => setCurrentView('styles')}
-              className={`px-4 py-4 font-medium transition-all border-b-2 ${
-                currentView === 'styles'
+              className={`px-4 py-4 font-medium transition-all border-b-2 ${currentView === 'styles'
                   ? 'border-[#E8995C] text-white'
                   : 'border-transparent text-[#9ca3af] hover:text-white'
-              }`}
+                }`}
             >
               🎨 Image Styles
             </button>
@@ -141,6 +140,37 @@ function Dashboard() {
             onToggle={handleToggleTopic}
             onDelete={handleDeleteTopic}
           />
+
+          {/* City Markets Toggle */}
+          <div className="bg-[#1a1a1a] rounded-2xl p-5 border border-[#2a2a2a] mb-8 flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-base">🏙️</span>
+                <span className="text-sm font-semibold text-white">City Market Sections</span>
+                {!includeCityMarkets && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#2a2a2a] text-[#9ca3af] uppercase tracking-wider">Off</span>
+                )}
+                {includeCityMarkets && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-900 text-purple-300 uppercase tracking-wider">On</span>
+                )}
+              </div>
+              <p className="text-xs text-[#6b7280]">
+                {includeCityMarkets
+                  ? 'Newsletter will include per-city market sections'
+                  : 'City sections disabled — requires beehiiv Enterprise for dynamic delivery'}
+              </p>
+            </div>
+            <button
+              onClick={() => setIncludeCityMarkets(v => !v)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${includeCityMarkets ? 'bg-purple-600' : 'bg-[#3a3a3a]'
+                }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${includeCityMarkets ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+              />
+            </button>
+          </div>
 
           <PipelineVisualization
             stages={stages}

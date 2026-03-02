@@ -37,6 +37,7 @@ export interface PipelineOptions {
   editionId?: string;
   customTopics?: string[];
   stylePresetId?: string;
+  includeCityMarkets?: boolean;
 }
 
 export interface EditionContext {

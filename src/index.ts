@@ -7,6 +7,7 @@ import { EditorialStage } from './pipeline/stages/03-editorial';
 import { WritingStage } from './pipeline/stages/04-writing';
 import { ImagesStage } from './pipeline/stages/05-images';
 import { AssemblyStage } from './pipeline/stages/06-assembly';
+import { PublishStage } from './pipeline/stages/07-publish';
 import { config, validateConfig } from './config/env';
 import logger from './utils/logger';
 
@@ -45,8 +46,9 @@ export async function createPipeline(): Promise<Pipeline> {
   pipeline.registerStage(new WritingStage(config.anthropicApiKey));
   pipeline.registerStage(new ImagesStage(config.geminiApiKey, storage));
   pipeline.registerStage(new AssemblyStage());
+  pipeline.registerStage(new PublishStage());
 
-  logger.info('Pipeline initialized successfully with 6 stages');
+  logger.info('Pipeline initialized successfully with 7 stages');
 
   return pipeline;
 }
